@@ -60,3 +60,14 @@ jobs:
       test-script: ci_image_test.sh
       save-tar: true
 
+
+  scan:
+    name: Scan Candidate Image
+    needs: image
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
+    secrets: inherit
+    with:
+      scan-type: image
+      image-ref: ${{ needs.image.outputs.image-ref-digest }}
+      image-artifact: image-tar
+
