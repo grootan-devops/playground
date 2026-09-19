@@ -4,7 +4,7 @@ ARG BASE_IMAGE_REPO=redhat/ubi9-minimal
 
 FROM ${BASE_IMAGE_REPO}:${BASE_IMAGE_TAG}
 
-ARG SERVICE_NAME=web
+ARG SERVICE_NAME=backend
 LABEL org.opencontainers.image.title="toolkit-${SERVICE_NAME}"
 
 COPY app.sh /usr/local/bin/app.sh

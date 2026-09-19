@@ -1,16 +1,21 @@
-name: CI · Toolkit Image Verification
-run-name: "CI · ${{ github.event.pull_request.number && format('PR #{0} · {1}', github.event.pull_request.number, github.head_ref) || format('{0} · #{1}', github.ref_name, github.run_number) }}"
+name: CI · PR Verification
+run-name: "CI · ${{ github.event.pull_request.number && format('PR #{0} · {1}', github.event.pull_request.number, github.head_ref) || format('{0} · {1}', inputs.service, github.ref_name) }}"
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main, dev, mono-repo-dev]
     paths:
       - ".github/**"
-      - ".dockerignore"
-      - "Dockerfile"
-      - "VERSION"
-      - "ci_image_test.sh"
+      - "api/**"
+      - "backend/**"
   workflow_dispatch:
+    inputs:
+      service:
+        description: Which service to verify
+        required: true
+        default: all
+        type: choice
+        options: [all, api, backend]
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
@@ -19,89 +24,47 @@ concurrency:
 permissions:
   contents: read
   packages: write
-  # Lets trivy-cache.yml replace the 'trivy-db' entry; GitHub caches are
-  # immutable, so a stable key has to be deleted before it can be rewritten.
   actions: write
   pull-requests: read
   checks: write
 
 jobs:
-  version:
-    name: Version
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
-    outputs:
-      value: ${{ steps.version.outputs.value }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-
-      - name: Read VERSION
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$(tr -d '[:space:]' < VERSION)"
-          [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          echo "value=${VERSION}" >> "${GITHUB_OUTPUT}"
-
-  init:
-    name: Initialize
-    needs: version
-    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
+  # A pull request detects from changed files; a manual run takes the choice.
+  discover:
+    name: Discover
+    uses: grootan-devops/github-ci-library/.github/workflows/mono.yml@mono-repo-dev
     secrets: inherit
     with:
-      tag: ${{ needs.version.outputs.value }}
-      ignore-chart: "true"
-      ignore-docker: "false"
+      only: ${{ inputs.service }}
+      projects: >-
+        [
+          {"name":"api","path":"api","image":"grootantech/toolkit-api"},
+          {"name":"backend","path":"backend","image":"grootantech/toolkit-backend"}
+        ]
 
   lint:
     name: Lint
-    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@dev
+    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@mono-repo-dev
     secrets: inherit
 
-  image:
-    name: Build, Push & Smoke Test
-    needs: init
-    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
-    secrets: inherit
-    with:
-      image-tag: ${{ needs.init.outputs.image-push-tag }}
-      image-repository: ${{ needs.init.outputs.image-push-repository }}
-      test: true
-      test-script: ci_image_test.sh
-
+  # One database serves every service's scan.
   trivy-cache:
     name: Warm Trivy Cache
-    needs: init
-    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@mono-repo-dev
     secrets: inherit
     with:
-      # The toolkit image ships a JDK, so Trivy needs the Java DB to scan it.
-      # Warm it once here rather than downloading 900MB in the scan job.
       enable-java-db: "true"
 
-  scan:
-    name: Scan Candidate Image
-    needs: [image, trivy-cache]
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
+  service:
+    name: "${{ matrix.name }}"
+    needs: [discover, trivy-cache]
+    if: ${{ needs.discover.outputs.any-changed == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    uses: ./.github/workflows/service-pr.yml
     secrets: inherit
     with:
-      scan-type: image
-      image-ref: ${{ needs.image.outputs.image-ref-digest }}
-
-  check:
-    name: Release Guards
-    # GitLab's guards (Tag:Tag Existence, Changelog:Check Existence,
-    # Image:Check Existence) depend on Common:Init alone. They assert that a
-    # tag/changelog/image version is still free — nothing they check is
-    # produced by the build or the scan, so waiting on those only hid the
-    # guards' verdict whenever a scan failed.
-    needs: init
-    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
-    secrets: inherit
-    with:
-      tag: ${{ needs.init.outputs.tag }}
-      image-tag: ${{ needs.init.outputs.image-tag }}
-      image-repository: ${{ needs.init.outputs.image-repository }}
-      check-migration: false
-
+      name: ${{ matrix.name }}
+      path: ${{ matrix.path }}
+      image: ${{ matrix.image }}
