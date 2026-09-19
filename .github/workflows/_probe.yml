@@ -4,7 +4,12 @@ on:
   pull_request:
     branches: [main, dev]
 
-permissions: write-all
+permissions:
+  contents: read
+  packages: write
+  actions: read
+  pull-requests: read
+  checks: write
 
 jobs:
   version:
@@ -28,30 +33,17 @@ jobs:
   init:
     name: Initialize
     needs: version
-    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@feat/split-self-ci-and-guard-discovery
     secrets: inherit
     with:
       tag: ${{ needs.version.outputs.value }}
       ignore-chart: "true"
       ignore-docker: "false"
 
-
-  check:
-    name: Release Guards
-    needs: init
-    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
-    secrets: inherit
-    with:
-      tag: ${{ needs.init.outputs.tag }}
-      image-tag: ${{ needs.init.outputs.image-tag }}
-      image-repository: grootantec/toolkit
-      check-migration: false
-
-
   image:
     name: Build, Push & Smoke Test
     needs: init
-    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@feat/split-self-ci-and-guard-discovery
     secrets: inherit
     with:
       image-tag: ${{ needs.init.outputs.image-push-tag }}
@@ -60,14 +52,24 @@ jobs:
       test-script: ci_image_test.sh
       save-tar: true
 
-
   scan:
     name: Scan Candidate Image
     needs: image
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@probe/scan-no-junit
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@feat/split-self-ci-and-guard-discovery
     secrets: inherit
     with:
       scan-type: image
       image-ref: ${{ needs.image.outputs.image-ref-digest }}
       image-artifact: image-tar
+
+  check:
+    name: Release Guards
+    needs: [init, image, scan]
+    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@feat/split-self-ci-and-guard-discovery
+    secrets: inherit
+    with:
+      tag: ${{ needs.init.outputs.tag }}
+      image-tag: ${{ needs.init.outputs.image-tag }}
+      image-repository: grootantec/toolkit
+      check-migration: false
 
