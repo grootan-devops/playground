@@ -1,0 +1,12 @@
+# Generated build and release artifacts
+IMAGE_INFO.md
+RELEASE_CHANGELOG.md
+RELEASE_CHANGELOG_CARD.json
+image.tar.gz
+sbom.cdx.json
+*_trivy_scan_report.*
+_artifacts/
+_release_assets/
+
+# Local platform files
+.DS_Store
