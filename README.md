@@ -9,7 +9,6 @@ promotes the verified digest to Docker Hub as `grootantec/toolkit:1.0.0`.
 
 ## Release contract
 
-- Release version: `1.0.0`, stored in [`VERSION`](./VERSION).
 - Production image: `registry-1.docker.io/grootantec/toolkit:1.0.0`.
 - Immutable release tag: `1.0.0`; promotion also updates the convenience aliases
   `1.0`, `1`, and `latest` to the same digest.
@@ -66,7 +65,7 @@ Build the same image locally:
 
 ```bash
 docker build \
-  --tag grootantec/toolkit:1.0.0 \
+  --tag grootantec/toolkit:<version> \
   .
 ```
 
@@ -76,7 +75,7 @@ Run the E2E smoke test inside it:
 docker run --rm \
   --volume "$PWD:/tmp/image-test:ro" \
   --entrypoint bash \
-  grootantec/toolkit:1.0.0 \
+  grootantec/toolkit:<version> \
   -c 'cd /tmp/image-test && ./ci_image_test.sh'
 ```
 
