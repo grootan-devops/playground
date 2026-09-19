@@ -1,0 +1,24 @@
+name: Probe
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  packages: write
+  pull-requests: read
+  id-token: write
+  security-events: write
+  statuses: write
+
+jobs:
+  init:
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
+    secrets: inherit
+    with:
+      tag: "1.0.0"
+      ignore-chart: "true"
+      ignore-docker: "false"
