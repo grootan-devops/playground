@@ -1,5 +1,5 @@
 name: Scan · Published Toolkit Image
-run-name: "Image Scan · ${{ inputs.target-version }} · ${{ github.actor }}"
+run-name: "Image Scan · ${{ inputs.target-version }} · #${{ github.run_number }}"
 
 on:
   workflow_dispatch:
