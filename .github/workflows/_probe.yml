@@ -4,21 +4,67 @@ on:
   pull_request:
     branches: [main, dev]
 
-permissions:
-  contents: read
-  actions: read
-  checks: write
-  packages: write
-  pull-requests: read
-  id-token: write
-  security-events: write
-  statuses: write
+permissions: write-all
 
 jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.version.outputs.value }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Read VERSION
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "value=${VERSION}" >> "${GITHUB_OUTPUT}"
+
   init:
+    name: Initialize
+    needs: version
     uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
     secrets: inherit
     with:
-      tag: "1.0.0"
+      tag: ${{ needs.version.outputs.value }}
       ignore-chart: "true"
       ignore-docker: "false"
+
+  image:
+    name: Build, Push & Smoke Test
+    needs: init
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
+    secrets: inherit
+    with:
+      image-tag: ${{ needs.init.outputs.image-push-tag }}
+      image-repository: grootantec/toolkit
+      test: true
+      test-script: ci_image_test.sh
+      save-tar: true
+
+  scan:
+    name: Scan Candidate Image
+    needs: image
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
+    secrets: inherit
+    with:
+      scan-type: image
+      image-ref: ${{ needs.image.outputs.image-ref-digest }}
+      image-artifact: image-tar
+
+  check:
+    name: Release Guards
+    needs: [init, image, scan]
+    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
+    secrets: inherit
+    with:
+      tag: ${{ needs.init.outputs.tag }}
+      image-tag: ${{ needs.init.outputs.image-tag }}
+      image-repository: grootantec/toolkit
+      check-migration: false
+
