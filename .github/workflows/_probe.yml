@@ -64,7 +64,7 @@ jobs:
   scan:
     name: Scan Candidate Image
     needs: image
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@probe/scan-no-junit
     secrets: inherit
     with:
       scan-type: image
