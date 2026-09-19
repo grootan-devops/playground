@@ -12,6 +12,28 @@ permissions:
   checks: write
 
 jobs:
+  secret-presence:
+    name: Secret Presence
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report Which Secrets Are Visible
+        env:
+          U: ${{ secrets.IMAGE_REGISTRY_USERNAME }}
+          P: ${{ secrets.IMAGE_REGISTRY_PASSWORD }}
+          DU: ${{ secrets.DOCKERHUB_USERNAME }}
+          DT: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Reports presence only. No secret value is ever printed.
+          for N in U P DU DT; do
+            V="${!N:-}"
+            if [[ -n "${V}" ]]; then
+              echo "${N}: SET (${#V} chars)"
+            else
+              echo "${N}: empty"
+            fi
+          done
+
   version:
     name: Version
     runs-on: ubuntu-latest
