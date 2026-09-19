@@ -68,9 +68,15 @@ jobs:
       test: true
       test-script: ci_image_test.sh
 
+  trivy-cache:
+    name: Warm Trivy Cache
+    needs: init
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
+    secrets: inherit
+
   scan:
     name: Scan Candidate Image
-    needs: image
+    needs: [image, trivy-cache]
     uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
     secrets: inherit
     with:
