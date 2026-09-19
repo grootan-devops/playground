@@ -82,3 +82,4 @@ jobs:
       image-tag: ${{ needs.init.outputs.image-tag }}
       image-repository: grootantec/toolkit
       check-migration: false
+
