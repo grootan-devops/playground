@@ -1,4 +1,5 @@
 name: Check · Release Prerequisites
+run-name: "Check · ${{ github.ref_name }} · ${{ github.actor }}"
 
 on:
   workflow_dispatch:

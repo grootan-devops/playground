@@ -1,4 +1,5 @@
 name: Build · Toolkit Image
+run-name: "Build · ${{ github.ref_name }} · ${{ github.actor }}"
 
 on:
   workflow_dispatch:

@@ -1,4 +1,5 @@
 name: CD · Toolkit Image Release
+run-name: "CD · Release ${{ github.ref_name }} · ${{ github.actor }}"
 
 on:
   push:
