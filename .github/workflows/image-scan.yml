@@ -25,5 +25,5 @@ jobs:
     secrets: inherit
     with:
       scan-type: image
-      image-repository: grootantec/toolkit
+      image-repository: ${{ vars.IMAGE_REPOSITORY }}
       target-version: ${{ inputs.target-version }}

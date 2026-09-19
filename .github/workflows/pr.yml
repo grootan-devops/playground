@@ -58,7 +58,7 @@ jobs:
     secrets: inherit
     with:
       image-tag: ${{ needs.init.outputs.image-push-tag }}
-      image-repository: grootantec/toolkit
+      image-repository: ${{ needs.init.outputs.image-push-repository }}
       test: true
       test-script: ci_image_test.sh
 
@@ -79,6 +79,6 @@ jobs:
     with:
       tag: ${{ needs.init.outputs.tag }}
       image-tag: ${{ needs.init.outputs.image-tag }}
-      image-repository: grootantec/toolkit
+      image-repository: ${{ needs.init.outputs.image-repository }}
       check-migration: false
 

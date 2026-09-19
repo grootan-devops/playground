@@ -57,7 +57,7 @@ jobs:
     with:
       tag: ${{ needs.init.outputs.tag }}
       image-tag: ${{ needs.init.outputs.image-tag }}
-      image-repository: grootantec/toolkit
+      image-repository: ${{ needs.init.outputs.image-repository }}
       check-migration: false
 
   image:
@@ -70,7 +70,7 @@ jobs:
       image-tag: ${{ needs.init.outputs.tag }}
       release-tag: ${{ needs.init.outputs.tag }}
       candidate-tag: ${{ needs.init.outputs.candidate-image-tag }}
-      image-repository: grootantec/toolkit
+      image-repository: ${{ needs.init.outputs.image-repository }}
       image-dev-repository: ${{ needs.init.outputs.image-dev-repository }}
 
   release:
