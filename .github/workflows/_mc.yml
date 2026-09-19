@@ -6,7 +6,11 @@ on:
       path: { required: true, type: string }
       image: { required: true, type: string }
 jobs:
-  echo:
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
-    steps:
-      - run: echo "child ${{ inputs.name }} ${{ inputs.path }} ${{ inputs.image }}"
+  init:
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@mono-repo-dev
+    secrets: inherit
+    with:
+      project-path: ${{ inputs.path }}
+      image-repository: ${{ inputs.image }}
+      ignore-chart: "true"
+      ignore-docker: "false"
