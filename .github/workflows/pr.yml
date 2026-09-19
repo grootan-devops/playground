@@ -91,7 +91,12 @@ jobs:
 
   check:
     name: Release Guards
-    needs: [init, image, scan]
+    # GitLab's guards (Tag:Tag Existence, Changelog:Check Existence,
+    # Image:Check Existence) depend on Common:Init alone. They assert that a
+    # tag/changelog/image version is still free — nothing they check is
+    # produced by the build or the scan, so waiting on those only hid the
+    # guards' verdict whenever a scan failed.
+    needs: init
     uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
     secrets: inherit
     with:
