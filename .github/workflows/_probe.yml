@@ -35,3 +35,15 @@ jobs:
       ignore-chart: "true"
       ignore-docker: "false"
 
+
+  check:
+    name: Release Guards
+    needs: init
+    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
+    secrets: inherit
+    with:
+      tag: ${{ needs.init.outputs.tag }}
+      image-tag: ${{ needs.init.outputs.image-tag }}
+      image-repository: grootantec/toolkit
+      check-migration: false
+
