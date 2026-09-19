@@ -25,7 +25,7 @@ permissions:
 jobs:
   version:
     name: Version
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
     outputs:
       value: ${{ steps.version.outputs.value }}
     steps:
@@ -61,7 +61,6 @@ jobs:
       image-repository: grootantec/toolkit
       test: true
       test-script: ci_image_test.sh
-      save-tar: true
 
   scan:
     name: Scan Candidate Image
@@ -71,7 +70,6 @@ jobs:
     with:
       scan-type: image
       image-ref: ${{ needs.image.outputs.image-ref-digest }}
-      image-artifact: image-tar
 
   check:
     name: Release Guards
