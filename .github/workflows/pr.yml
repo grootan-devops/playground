@@ -52,6 +52,11 @@ jobs:
       ignore-chart: "true"
       ignore-docker: "false"
 
+  lint:
+    name: Lint
+    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@dev
+    secrets: inherit
+
   image:
     name: Build, Push & Smoke Test
     needs: init
