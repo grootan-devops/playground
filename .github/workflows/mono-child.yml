@@ -1,0 +1,60 @@
+name: Mono · Child
+run-name: "Child · ${{ inputs.name }}"
+
+# One project's pipeline. Called once per changed project, so init's outputs
+# stay inside the instance that produced them — a matrix job's outputs are
+# overwritten by whichever leg finishes last.
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        required: true
+        type: string
+      path:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  actions: write
+  checks: write
+
+jobs:
+  init:
+    name: Init
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@mono-repo-dev
+    secrets: inherit
+    with:
+      project-path: ${{ inputs.path }}
+      image-repository: ${{ inputs.image }}
+      ignore-chart: "true"
+      ignore-docker: "false"
+
+  image:
+    name: Image
+    needs: init
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@mono-repo-dev
+    secrets: inherit
+    with:
+      project-path: ${{ inputs.path }}
+      image-tag: ${{ needs.init.outputs.image-push-tag }}
+      image-repository: ${{ needs.init.outputs.image-push-repository }}
+      test: true
+      test-script: smoke.sh
+
+  check:
+    name: Guards
+    needs: init
+    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@mono-repo-dev
+    secrets: inherit
+    with:
+      tag: ${{ needs.init.outputs.tag }}
+      image-tag: ${{ needs.init.outputs.image-tag }}
+      image-repository: ${{ needs.init.outputs.image-repository }}
+      project-path: ${{ inputs.path }}
+      check-migration: false
