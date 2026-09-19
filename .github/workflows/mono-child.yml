@@ -1,5 +1,4 @@
 name: Mono · Child
-run-name: "Child · ${{ inputs.name }}"
 
 # One project's pipeline. Called once per changed project, so init's outputs
 # stay inside the instance that produced them — a matrix job's outputs are
