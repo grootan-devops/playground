@@ -19,7 +19,9 @@ concurrency:
 permissions:
   contents: read
   packages: write
-  actions: read
+  # Lets trivy-cache.yml replace the 'trivy-db' entry; GitHub caches are
+  # immutable, so a stable key has to be deleted before it can be rewritten.
+  actions: write
   pull-requests: read
   checks: write
 
