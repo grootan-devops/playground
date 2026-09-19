@@ -47,3 +47,16 @@ jobs:
       image-repository: grootantec/toolkit
       check-migration: false
 
+
+  image:
+    name: Build, Push & Smoke Test
+    needs: init
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
+    secrets: inherit
+    with:
+      image-tag: ${{ needs.init.outputs.image-push-tag }}
+      image-repository: grootantec/toolkit
+      test: true
+      test-script: ci_image_test.sh
+      save-tar: true
+
