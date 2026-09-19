@@ -22,3 +22,15 @@ jobs:
           echo "any=${{ needs.discover.outputs.any-changed }}"
           echo "count=${{ needs.discover.outputs.changed-count }}"
           echo 'matrix=${{ needs.discover.outputs.matrix }}'
+
+  project:
+    needs: discover
+    if: ${{ needs.discover.outputs.any-changed == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    uses: ./.github/workflows/_mc.yml
+    with:
+      name: ${{ matrix.name }}
+      path: ${{ matrix.path }}
+      image: ${{ matrix.image }}

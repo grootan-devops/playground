@@ -1,0 +1,12 @@
+name: MonoProbeChild
+on:
+  workflow_call:
+    inputs:
+      name: { required: true, type: string }
+      path: { required: true, type: string }
+      image: { required: true, type: string }
+jobs:
+  echo:
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
+    steps:
+      - run: echo "child ${{ inputs.name }} ${{ inputs.path }} ${{ inputs.image }}"
