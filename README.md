@@ -1,9 +1,45 @@
-# playground
+# Toolkit Docker E2E Playground
 
-[Compatibility](https://github.com/grootan-devops/ai-skills/blob/main/COMPATIBILITY.md) · [Security](./SECURITY.md) · [Reporting policy](./CONTRIBUTING.md)
+[Security](./SECURITY.md) · [Reporting policy](./CONTRIBUTING.md)
 
-See the [Contoso golden path](./docs/golden-path.md) for the end-to-end CI, OCI,
-GitOps, ArgoCD, and Kubernetes delivery model.
+This repository is the end-to-end consumer project for the Grootan GitHub CI
+library's Docker pipeline. It carries a reviewable snapshot of the toolkit
+`Dockerfile` and its image smoke test, builds and scans candidate images, then
+promotes the verified digest to Docker Hub as `grootantec/toolkit:<version>`.
+
+## Included E2E files
+
+| File | Purpose |
+|---|---|
+| [`Dockerfile`](./Dockerfile) | Builds the complete toolkit image. |
+| [`ci_image_test.sh`](./ci_image_test.sh) | Verifies every required tool inside the resulting image. |
+| [`.github/workflows/pr.yml`](./.github/workflows/pr.yml) | Builds, tests, scans, and guards candidate images. |
+| [`.github/workflows/release.yml`](./.github/workflows/release.yml) | Promotes the verified candidate and publishes release notes. |
+| [`.github/workflows/build.yml`](./.github/workflows/build.yml) | Manually builds, publishes, and smoke-tests a candidate image. |
+| [`.github/workflows/lint.yml`](./.github/workflows/lint.yml) | Runs the reusable Dockerfile, YAML, and changelog linters. |
+| [`.github/workflows/check.yml`](./.github/workflows/check.yml) | Runs release prerequisites without building an image. |
+| [`.github/workflows/image-scan.yml`](./.github/workflows/image-scan.yml) | Scans any published toolkit image tag. |
+| [`.github/workflows/secret-scan.yml`](./.github/workflows/secret-scan.yml) | Scans the complete Git history for exposed secrets. |
+| [`CHANGELOG.md`](./CHANGELOG.md) | Initial `1.0.0` release notes. |
+
+## GitHub repository configuration
+
+Configure these Actions variables:
+
+| Variable | Value |
+|---|---|
+| `IMAGE_REGISTRY` | `registry-1.docker.io` |
+| `IMAGE_REPOSITORY` | `grootantec/toolkit` |
+
+This Docker-only project deliberately disables the shared migration guard. Its
+compatibility surface is the published OCI image and the smoke-test contract.
+
+Configure these Actions secrets:
+
+| Secret | Purpose |
+|---|---|
+| `IMAGE_REGISTRY_USERNAME` | Docker Hub account or organization service account. |
+| `IMAGE_REGISTRY_PASSWORD` | Docker Hub access token with permission to push `grootantec/toolkit`. |
 
 ## License
 

@@ -1,0 +1,30 @@
+name: Scan · Published Toolkit Image
+run-name: "Image Scan · ${{ inputs.target-version }} · ${{ github.actor }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target-version:
+        description: Toolkit image tag to scan
+        required: true
+        default: "1.0.0"
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  trivy-cache:
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
+    secrets: inherit
+
+  image-scan:
+    needs: trivy-cache
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
+    secrets: inherit
+    with:
+      scan-type: image
+      image-repository: ${{ vars.IMAGE_REPOSITORY }}
+      target-version: ${{ inputs.target-version }}
