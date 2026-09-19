@@ -73,6 +73,10 @@ jobs:
     needs: init
     uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
     secrets: inherit
+    with:
+      # The toolkit image ships a JDK, so Trivy needs the Java DB to scan it.
+      # Warm it once here rather than downloading 900MB in the scan job.
+      enable-java-db: "true"
 
   scan:
     name: Scan Candidate Image
