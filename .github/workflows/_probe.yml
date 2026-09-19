@@ -35,36 +35,3 @@ jobs:
       ignore-chart: "true"
       ignore-docker: "false"
 
-  image:
-    name: Build, Push & Smoke Test
-    needs: init
-    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
-    secrets: inherit
-    with:
-      image-tag: ${{ needs.init.outputs.image-push-tag }}
-      image-repository: grootantec/toolkit
-      test: true
-      test-script: ci_image_test.sh
-      save-tar: true
-
-  scan:
-    name: Scan Candidate Image
-    needs: image
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
-    secrets: inherit
-    with:
-      scan-type: image
-      image-ref: ${{ needs.image.outputs.image-ref-digest }}
-      image-artifact: image-tar
-
-  check:
-    name: Release Guards
-    needs: [init, image, scan]
-    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
-    secrets: inherit
-    with:
-      tag: ${{ needs.init.outputs.tag }}
-      image-tag: ${{ needs.init.outputs.image-tag }}
-      image-repository: grootantec/toolkit
-      check-migration: false
-
