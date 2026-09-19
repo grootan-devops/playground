@@ -24,13 +24,9 @@ jobs:
           echo 'matrix=${{ needs.discover.outputs.matrix }}'
 
   project:
-    needs: discover
-    if: ${{ needs.discover.outputs.any-changed == 'true' }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
     uses: ./.github/workflows/_mc.yml
+    secrets: inherit
     with:
-      name: ${{ matrix.name }}
-      path: ${{ matrix.path }}
-      image: ${{ matrix.image }}
+      name: api
+      path: services/api
+      image: grootantech/toolkit-api
