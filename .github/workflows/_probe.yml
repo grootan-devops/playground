@@ -14,7 +14,7 @@ permissions:
 jobs:
   secret-presence:
     name: Secret Presence
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
     steps:
       - name: Report Which Secrets Are Visible
         env:
@@ -36,7 +36,7 @@ jobs:
 
   version:
     name: Version
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
     outputs:
       value: ${{ steps.version.outputs.value }}
     steps:
