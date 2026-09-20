@@ -50,3 +50,4 @@ Licensed under the [GNU Affero General Public License v3.0](./LICENSE.md)
 [CONTRIBUTING.md](./CONTRIBUTING.md) for bug and security reporting.
 
 <!-- release pipeline shape verification -->
+<!-- release shape check 2 -->
