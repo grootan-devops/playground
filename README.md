@@ -45,6 +45,9 @@ Configure these Actions secrets:
 
 Copyright 2026 Grootan Technologies Pvt Ltd.
 
+Release notes over 125,000 characters are truncated in the GitHub Release body and
+attached in full as an asset.
+
 Releases are cut by a push to `main` that touches something outside `.github/**`;
 the pipeline promotes the image the pull request already built rather than
 rebuilding it. A workflow-only change therefore never releases. Bump `VERSION`
