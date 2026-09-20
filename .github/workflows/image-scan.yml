@@ -12,8 +12,6 @@ on:
 
 permissions:
   contents: read
-  # Lets trivy-cache.yml replace the 'trivy-db' entry; GitHub caches are
-  # immutable, so a stable key has to be deleted before it can be rewritten.
   actions: write
   checks: write
 
@@ -22,8 +20,6 @@ jobs:
     uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
     secrets: inherit
     with:
-      # The toolkit image ships a JDK, so Trivy needs the Java DB to scan it.
-      # Warm it once here rather than downloading 900MB in the scan job.
       enable-java-db: "true"
 
   image-scan:

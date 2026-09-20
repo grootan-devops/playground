@@ -4,8 +4,6 @@ run-name: "CD · ${{ github.ref_name }} · #${{ github.run_number }}"
 on:
   push:
     branches: [main]
-    # A change confined to the pipeline itself is verified by the pull request
-    # that introduced it. It must never cut a release on its own.
     paths-ignore:
       - ".github/**"
   workflow_dispatch:
@@ -22,11 +20,6 @@ permissions:
   checks: write
 
 jobs:
-  # GitLab refuses a release from a manual pipeline outright (`.release-rules`:
-  # `$CI_PIPELINE_SOURCE =~ /^(web|api)$/ → when: never`). A workflow_dispatch is
-  # worse, because it can target ANY ref — a release cut from a feature branch
-  # would tag and publish work that never passed the pull request. Keep the
-  # deliberate-release button, but refuse any ref that is not the default branch.
   guard-ref:
     name: "Release: Verify Ref"
     if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -48,8 +41,6 @@ jobs:
   version:
     name: Version
     needs: [guard-ref]
-    # guard-ref is skipped on a push, and a skipped dependency would skip this
-    # too — so accept skipped, refuse only an actual failure.
     if: ${{ !cancelled() && needs.guard-ref.result != 'failure' }}
     runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
     outputs:
@@ -94,7 +85,6 @@ jobs:
     uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
     secrets: inherit
     with:
-      # The toolkit image ships a JDK, so Trivy needs the Java DB to scan it.
       enable-java-db: "true"
 
   scan:
@@ -109,9 +99,6 @@ jobs:
 
   image:
     name: Promote Verified Image
-    # The candidate is scanned here rather than trusted from the pull request
-    # run: promotion is the last point at which a vulnerable image can still be
-    # stopped, and the candidate may have sat in the dev repository for days.
     needs: [init, check, scan]
     uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
     secrets: inherit
@@ -122,8 +109,6 @@ jobs:
       candidate-tag: ${{ needs.init.outputs.candidate-image-tag }}
       image-repository: ${{ needs.init.outputs.image-repository }}
       image-dev-repository: ${{ needs.init.outputs.image-dev-repository }}
-      # docker.yml cannot depend on a scan that lives in this workflow, so it
-      # refuses to promote unless the verdict is handed to it.
       scan-result: ${{ needs.scan.result }}
 
   release:
