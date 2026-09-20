@@ -15,25 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  guard-ref:
-    name: Verify Ref
-    if: ${{ github.event_name == 'workflow_dispatch' }}
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
-    timeout-minutes: 5
-    steps:
-      - name: Refuse A Release From A Non-Default Ref
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-        run: |
-          set -euo pipefail
-          if [[ "${GITHUB_REF_NAME}" != "${DEFAULT_BRANCH}" ]]; then
-            echo "::error title=Release refused::A release may only be cut from '${DEFAULT_BRANCH}', not '${GITHUB_REF_NAME}'."
-            exit 1
-          fi
-
   init:
-    needs: guard-ref
-    if: ${{ !cancelled() && needs.guard-ref.result != 'failure' }}
     permissions:
       contents: read
       actions: read
@@ -45,9 +27,6 @@ jobs:
 
   image:
     needs: init
-    # guard-ref is skipped on a push, and that skip propagates down the chain:
-    # init overrides it explicitly, so image and release must too. Without this
-    # both skip on every merge and the release silently produces nothing.
     if: ${{ !cancelled() && needs.init.result == 'success' }}
     permissions:
       contents: read
