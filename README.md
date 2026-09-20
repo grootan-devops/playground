@@ -45,6 +45,10 @@ Configure these Actions secrets:
 
 Copyright 2026 Grootan Technologies Pvt Ltd.
 
+Releases are cut by a push to `main` that touches something outside `.github/**`;
+the pipeline promotes the image the pull request already built rather than
+rebuilding it. See `.github/workflows/release.yml`.
+
 Licensed under the [GNU Affero General Public License v3.0](./LICENSE.md)
 (`AGPL-3.0-only`). External contributions are not accepted; see
 [CONTRIBUTING.md](./CONTRIBUTING.md) for bug and security reporting.
