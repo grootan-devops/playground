@@ -46,6 +46,10 @@ jobs:
 
   image:
     needs: init
+    # guard-ref is skipped on a push, and that skip propagates down the chain:
+    # init overrides it explicitly, so image and release must too. Without this
+    # both skip on every merge and the release silently produces nothing.
+    if: ${{ !cancelled() && needs.init.result == 'success' }}
     permissions:
       contents: read
       packages: write
@@ -64,6 +68,8 @@ jobs:
 
   release:
     needs: [init, image]
+    if: ${{ !cancelled() && needs.init.result == 'success'
+      && needs.image.result == 'success' }}
     permissions:
       contents: write
       actions: read
