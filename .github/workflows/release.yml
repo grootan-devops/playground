@@ -1,34 +1,23 @@
-name: CD · Toolkit Image Release
-run-name: "CD · ${{ github.ref_name }} · #${{ github.run_number }}"
+name: CD · Production Release
+run-name: "CD · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   push:
     branches: [main]
-    # A change confined to the pipeline itself is verified by the pull request
-    # that introduced it. It must never cut a release on its own.
     paths-ignore:
       - ".github/**"
   workflow_dispatch:
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}"
+  group: "release-${{ github.ref }}"
   cancel-in-progress: false
 
 permissions:
-  contents: write
-  packages: write
-  actions: read
-  pull-requests: read
-  checks: write
+  contents: read
 
 jobs:
-  # GitLab refuses a release from a manual pipeline outright (`.release-rules`:
-  # `$CI_PIPELINE_SOURCE =~ /^(web|api)$/ → when: never`). A workflow_dispatch is
-  # worse, because it can target ANY ref — a release cut from a feature branch
-  # would tag and publish work that never passed the pull request. Keep the
-  # deliberate-release button, but refuse any ref that is not the default branch.
   guard-ref:
-    name: "Release: Verify Ref"
+    name: Verify Ref
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
     timeout-minutes: 5
@@ -40,46 +29,45 @@ jobs:
           set -euo pipefail
           if [[ "${GITHUB_REF_NAME}" != "${DEFAULT_BRANCH}" ]]; then
             echo "::error title=Release refused::A release may only be cut from '${DEFAULT_BRANCH}', not '${GITHUB_REF_NAME}'."
-            { echo "### 🚫 Release refused"; echo; echo "\`${GITHUB_REF_NAME}\` is not the default branch."; echo; } >> "${GITHUB_STEP_SUMMARY}"
             exit 1
           fi
-          echo "Releasing from the default branch '${DEFAULT_BRANCH}'."
-
-  version:
-    name: Version
-    needs: [guard-ref]
-    # guard-ref is skipped on a push, and a skipped dependency would skip this
-    # too — so accept skipped, refuse only an actual failure.
-    if: ${{ !cancelled() && needs.guard-ref.result != 'failure' }}
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
-    outputs:
-      value: ${{ steps.version.outputs.value }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-
-      - name: Read VERSION
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$(tr -d '[:space:]' < VERSION)"
-          [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          echo "value=${VERSION}" >> "${GITHUB_OUTPUT}"
 
   init:
-    name: Initialize
-    needs: version
+    needs: guard-ref
+    if: ${{ !cancelled() && needs.guard-ref.result != 'failure' }}
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
     uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
     secrets: inherit
     with:
-      tag: ${{ needs.version.outputs.value }}
       ignore-chart: "true"
-      ignore-docker: "false"
+
+  trivy-cache:
+    needs: init
+    permissions:
+      contents: read
+      actions: write
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
+    secrets: inherit
+
+  scan:
+    needs: [init, trivy-cache]
+    permissions:
+      contents: read
+      checks: write
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
+    secrets: inherit
+    with:
+      scan-type: image
+      image-repository: ${{ needs.init.outputs.image-repository }}
+      target-version: ${{ needs.init.outputs.candidate-image-tag }}
 
   check:
-    name: Release Guards
     needs: init
+    permissions:
+      contents: read
     uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
     secrets: inherit
     with:
@@ -88,31 +76,11 @@ jobs:
       image-repository: ${{ needs.init.outputs.image-repository }}
       check-migration: false
 
-  trivy-cache:
-    name: Warm Trivy Cache
-    needs: init
-    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
-    secrets: inherit
-    with:
-      # The toolkit image ships a JDK, so Trivy needs the Java DB to scan it.
-      enable-java-db: "true"
-
-  scan:
-    name: Scan Candidate Image
-    needs: [init, trivy-cache]
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
-    secrets: inherit
-    with:
-      scan-type: image
-      image-repository: ${{ needs.init.outputs.image-dev-repository }}
-      target-version: ${{ needs.init.outputs.candidate-image-tag }}
-
   image:
-    name: Promote Verified Image
-    # The candidate is scanned here rather than trusted from the pull request
-    # run: promotion is the last point at which a vulnerable image can still be
-    # stopped, and the candidate may have sat in the dev repository for days.
-    needs: [init, check, scan]
+    needs: [init, scan, check]
+    permissions:
+      contents: read
+      packages: write
     uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
     secrets: inherit
     with:
@@ -122,16 +90,15 @@ jobs:
       candidate-tag: ${{ needs.init.outputs.candidate-image-tag }}
       image-repository: ${{ needs.init.outputs.image-repository }}
       image-dev-repository: ${{ needs.init.outputs.image-dev-repository }}
-      # docker.yml cannot depend on a scan that lives in this workflow, so it
-      # refuses to promote unless the verdict is handed to it.
       scan-result: ${{ needs.scan.result }}
 
   release:
-    name: Publish GitHub Release
     needs: [init, image]
+    permissions:
+      contents: write
+      actions: read
     uses: grootan-devops/github-ci-library/.github/workflows/release.yml@dev
     secrets: inherit
     with:
       tag: ${{ needs.init.outputs.tag }}
       upstream-run-id: ${{ needs.init.outputs.upstream-run-id }}
-      notify: false

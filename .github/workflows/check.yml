@@ -1,43 +1,37 @@
 name: Check · Release Prerequisites
-run-name: "Check · ${{ github.ref_name }} · #${{ github.run_number }}"
+run-name: "Check · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Version to test for release readiness
+        required: true
+        type: string
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 jobs:
-  version:
-    name: Version
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
-    outputs:
-      value: ${{ steps.version.outputs.value }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-      - name: Read VERSION
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$(tr -d '[:space:]' < VERSION)"
-          [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          echo "value=${VERSION}" >> "${GITHUB_OUTPUT}"
-
   init:
-    needs: version
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
     uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
     secrets: inherit
     with:
-      tag: ${{ needs.version.outputs.value }}
+      tag: ${{ inputs.tag }}
       ignore-chart: "true"
-      ignore-docker: "false"
 
   check:
     needs: init
+    permissions:
+      contents: read
     uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
     secrets: inherit
     with:

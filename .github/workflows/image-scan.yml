@@ -1,36 +1,49 @@
-name: Scan · Published Toolkit Image
-run-name: "Image Scan · ${{ inputs.target-version }} · #${{ github.run_number }}"
+name: Scan · Released Image
+run-name: "Scan · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   workflow_dispatch:
     inputs:
-      target-version:
-        description: Toolkit image tag to scan
+      tag:
+        description: Released version to re-scan
         required: true
-        default: "1.0.0"
         type: string
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
 
 permissions:
   contents: read
-  # Lets trivy-cache.yml replace the 'trivy-db' entry; GitHub caches are
-  # immutable, so a stable key has to be deleted before it can be rewritten.
-  actions: write
-  checks: write
 
 jobs:
-  trivy-cache:
-    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
+  init:
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
     secrets: inherit
     with:
-      # The toolkit image ships a JDK, so Trivy needs the Java DB to scan it.
-      # Warm it once here rather than downloading 900MB in the scan job.
-      enable-java-db: "true"
+      tag: ${{ inputs.tag }}
+      ignore-chart: "true"
+
+  trivy-cache:
+    needs: init
+    permissions:
+      contents: read
+      actions: write
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
+    secrets: inherit
 
   image-scan:
-    needs: trivy-cache
+    needs: [init, trivy-cache]
+    permissions:
+      contents: read
+      checks: write
     uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
     secrets: inherit
     with:
       scan-type: image
-      image-repository: ${{ vars.IMAGE_REPOSITORY }}
-      target-version: ${{ inputs.target-version }}
+      image-repository: ${{ needs.init.outputs.image-repository }}
+      target-version: ${{ needs.init.outputs.image-tag }}
