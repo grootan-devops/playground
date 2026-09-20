@@ -1,44 +1,50 @@
-name: Build · Service Image
-run-name: "Build · ${{ inputs.service }} · #${{ github.run_number }}"
+name: Build · Toolkit Image
+run-name: "Build · ${{ github.ref_name }} · #${{ github.run_number }}"
 
 on:
   workflow_dispatch:
-    inputs:
-      service:
-        description: Which service to build
-        required: true
-        default: all
-        type: choice
-        options: [all, api, backend]
 
 permissions:
   contents: read
   packages: write
-  actions: write
+  actions: read
   pull-requests: read
   checks: write
 
 jobs:
-  discover:
-    name: Discover
-    uses: grootan-devops/github-ci-library/.github/workflows/mono.yml@mono-repo-dev
-    secrets: inherit
-    with:
-      only: ${{ inputs.service }}
-      projects: >-
-        [
-          {"name":"api","path":"api","image":"grootantech/toolkit-api"},
-          {"name":"backend","path":"backend","image":"grootantech/toolkit-backend"}
-        ]
+  version:
+    name: Version
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
+    outputs:
+      value: ${{ steps.version.outputs.value }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+      - name: Read VERSION
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "value=${VERSION}" >> "${GITHUB_OUTPUT}"
 
-  service:
-    name: "${{ matrix.name }}"
-    needs: discover
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
-    uses: ./.github/workflows/service-build.yml
+  init:
+    needs: version
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
     secrets: inherit
     with:
-      path: ${{ matrix.path }}
-      image: ${{ matrix.image }}
+      tag: ${{ needs.version.outputs.value }}
+      ignore-chart: "true"
+      ignore-docker: "false"
+
+  image:
+    name: Build, Push & Smoke Test
+    needs: init
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
+    secrets: inherit
+    with:
+      image-tag: ${{ needs.init.outputs.image-push-tag }}
+      image-repository: ${{ needs.init.outputs.image-push-repository }}
+      test: true
+      test-script: ci_image_test.sh

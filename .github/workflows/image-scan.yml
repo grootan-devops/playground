@@ -1,57 +1,36 @@
-name: Scan · Published Service Image
-run-name: "Image Scan · ${{ inputs.service }} · ${{ inputs.target-version }}"
+name: Scan · Published Toolkit Image
+run-name: "Image Scan · ${{ inputs.target-version }} · #${{ github.run_number }}"
 
 on:
   workflow_dispatch:
     inputs:
-      service:
-        description: Which service to scan
-        required: true
-        default: all
-        type: choice
-        options: [all, api, backend]
       target-version:
-        description: Published image tag to scan
+        description: Toolkit image tag to scan
         required: true
         default: "1.0.0"
         type: string
 
 permissions:
   contents: read
+  # Lets trivy-cache.yml replace the 'trivy-db' entry; GitHub caches are
+  # immutable, so a stable key has to be deleted before it can be rewritten.
   actions: write
-  pull-requests: read
   checks: write
 
 jobs:
-  discover:
-    name: Discover
-    uses: grootan-devops/github-ci-library/.github/workflows/mono.yml@mono-repo-dev
-    secrets: inherit
-    with:
-      only: ${{ inputs.service }}
-      projects: >-
-        [
-          {"name":"api","path":"api","image":"grootantech/toolkit-api"},
-          {"name":"backend","path":"backend","image":"grootantech/toolkit-backend"}
-        ]
-
   trivy-cache:
-    name: Warm Trivy Cache
-    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@mono-repo-dev
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
     secrets: inherit
     with:
+      # The toolkit image ships a JDK, so Trivy needs the Java DB to scan it.
+      # Warm it once here rather than downloading 900MB in the scan job.
       enable-java-db: "true"
 
-  scan:
-    name: "${{ matrix.name }}"
-    needs: [discover, trivy-cache]
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@mono-repo-dev
+  image-scan:
+    needs: trivy-cache
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
     secrets: inherit
     with:
       scan-type: image
-      project-path: ${{ matrix.path }}
-      image-repository: ${{ matrix.image }}
+      image-repository: ${{ vars.IMAGE_REPOSITORY }}
       target-version: ${{ inputs.target-version }}
