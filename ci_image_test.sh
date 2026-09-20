@@ -212,6 +212,7 @@ env_dir MAVEN_HOME
 env_dir NODE_HOME
 env_dir NODE_PATH
 env_dir HELM_DATA_HOME
+env_dir GOPATH
 CHECKS=$((CHECKS + 1))
 if [ -n "${GOPATH-}" ]; then
     pass "\$GOPATH=${GOPATH}"

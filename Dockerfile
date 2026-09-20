@@ -213,7 +213,8 @@ ENV NODE_HOME="/usr/local/node" \
     HELM_DATA_HOME="/usr/local/share/helm" \
     PATH="/usr/local/node/bin:/usr/local/go/bin:/go/bin:$PATH"
 
-RUN ln -sf /usr/local/go/bin/go /usr/local/bin/go && \
+RUN mkdir -p "${GOPATH}/bin" && \
+    ln -sf /usr/local/go/bin/go /usr/local/bin/go && \
     ln -sf /usr/local/go/bin/gofmt /usr/local/bin/gofmt && \
     ln -sf /usr/local/java/bin/java /usr/local/bin/java && \
     ln -sf /usr/local/java/bin/javac /usr/local/bin/javac && \
