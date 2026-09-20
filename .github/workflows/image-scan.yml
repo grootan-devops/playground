@@ -1,0 +1,57 @@
+name: Scan · Published Service Image
+run-name: "Image Scan · ${{ inputs.service }} · ${{ inputs.target-version }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Which service to scan
+        required: true
+        default: all
+        type: choice
+        options: [all, api, backend]
+      target-version:
+        description: Published image tag to scan
+        required: true
+        default: "1.0.0"
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+  pull-requests: read
+  checks: write
+
+jobs:
+  discover:
+    name: Discover
+    uses: grootan-devops/github-ci-library/.github/workflows/mono.yml@mono-repo-dev
+    secrets: inherit
+    with:
+      only: ${{ inputs.service }}
+      projects: >-
+        [
+          {"name":"api","path":"api","image":"grootantech/toolkit-api"},
+          {"name":"backend","path":"backend","image":"grootantech/toolkit-backend"}
+        ]
+
+  trivy-cache:
+    name: Warm Trivy Cache
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@mono-repo-dev
+    secrets: inherit
+    with:
+      enable-java-db: "true"
+
+  scan:
+    name: "${{ matrix.name }}"
+    needs: [discover, trivy-cache]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@mono-repo-dev
+    secrets: inherit
+    with:
+      scan-type: image
+      project-path: ${{ matrix.path }}
+      image-repository: ${{ matrix.image }}
+      target-version: ${{ inputs.target-version }}
