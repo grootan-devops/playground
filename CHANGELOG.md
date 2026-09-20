@@ -6,6 +6,19 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-09-21
+
+### Fixed
+
+- Release artifacts are attached again: the CI library's containerised jobs called
+  `gh`, which is not in the toolkit image, so every provenance lookup and the
+  candidate artifact download silently returned nothing.
+
+### Added
+
+- The image creates `$GOPATH/bin`, which `PATH` already referenced, and the smoke
+  test asserts it.
+
 ## [1.0.2] - 2026-09-21
 
 ### Added
