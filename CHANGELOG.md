@@ -6,6 +6,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-21
+
+### Added
+
+- Smoke test now verifies `yarnpkg`, which the image links beside `yarn` but the
+  test never exercised.
+
+### Changed
+
+- The release pipeline promotes the image the pull request built rather than
+  rebuilding it, and no longer re-runs lint, scan or the release guards.
+
 ## [1.0.0] - 2026-09-19
 
 ### Added
