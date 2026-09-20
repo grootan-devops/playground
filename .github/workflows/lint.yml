@@ -1,5 +1,5 @@
 name: Lint · Repository
-run-name: "Lint · ${{ github.ref_name }} · ${{ github.actor }}"
+run-name: "Lint · ${{ github.ref_name }} · #${{ github.run_number }}"
 
 on:
   workflow_dispatch:
