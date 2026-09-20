@@ -1,46 +1,29 @@
-name: Build · Toolkit Image
-run-name: "Build · ${{ github.ref_name }} · #${{ github.run_number }}"
+name: Build · Candidate Image
 
 on:
   workflow_dispatch:
 
 permissions:
   contents: read
-  packages: write
-  actions: read
-  pull-requests: read
-  checks: write
 
 jobs:
-  version:
-    name: Version
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
-    outputs:
-      value: ${{ steps.version.outputs.value }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-      - name: Read VERSION
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$(tr -d '[:space:]' < VERSION)"
-          [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          echo "value=${VERSION}" >> "${GITHUB_OUTPUT}"
-
   init:
-    needs: version
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
     uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
     secrets: inherit
     with:
-      tag: ${{ needs.version.outputs.value }}
       ignore-chart: "true"
-      ignore-docker: "false"
 
+  # Builds, smoke-tests and pushes a candidate. No scan and no promotion:
+  # a dispatch always routes to the dev repository with a run-scoped suffix.
   image:
-    name: Build, Push & Smoke Test
     needs: init
+    permissions:
+      contents: read
+      packages: write
     uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
     secrets: inherit
     with:

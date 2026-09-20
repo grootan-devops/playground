@@ -10,3 +10,6 @@ _release_assets/
 
 # Local platform files
 .DS_Store
+
+# Local environment
+.env

@@ -1,15 +1,17 @@
-name: CI · Toolkit Image Verification
-run-name: "CI · ${{ github.event.pull_request.number && format('PR #{0} · {1}', github.event.pull_request.number, github.head_ref) || format('{0} · #{1}', github.ref_name, github.run_number) }}"
+name: CI · PR Verification
+run-name: "${{ github.event_name == 'pull_request' && format('PR #{0}', github.event.number) || 'Manual Verification' }} · ${{ github.actor }}"
 
 on:
   pull_request:
     branches: [main, dev]
     paths:
-      - ".github/**"
-      - ".dockerignore"
       - "Dockerfile"
+      - ".dockerignore"
       - "VERSION"
+      - "CHANGELOG.md"
       - "ci_image_test.sh"
+      # Without this a change to the pipeline itself is never verified.
+      - ".github/**"
   workflow_dispatch:
 
 concurrency:
@@ -18,77 +20,67 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
-  # Lets trivy-cache.yml replace the 'trivy-db' entry; GitHub caches are
-  # immutable, so a stable key has to be deleted before it can be rewritten.
-  actions: write
-  pull-requests: read
-  checks: write
 
 jobs:
-  version:
-    name: Version
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
-    outputs:
-      value: ${{ steps.version.outputs.value }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-
-      - name: Read VERSION
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$(tr -d '[:space:]' < VERSION)"
-          [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          echo "value=${VERSION}" >> "${GITHUB_OUTPUT}"
-
+  # Resolves the version from VERSION, plus every tag and repository the run uses.
+  # Nothing downstream recomputes them.
   init:
-    name: Initialize
-    needs: version
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
     uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
     secrets: inherit
     with:
-      tag: ${{ needs.version.outputs.value }}
       ignore-chart: "true"
-      ignore-docker: "false"
 
+  # Hadolint lives here. docker.yml builds; it does not lint.
   lint:
-    name: Lint
     uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@dev
     secrets: inherit
 
-  image:
-    name: Build, Push & Smoke Test
+  secret-scan:
+    uses: grootan-devops/github-ci-library/.github/workflows/secret-scanning.yml@dev
+    secrets: inherit
+
+  # Pulls the Trivy databases once so every scan restores them.
+  trivy-cache:
     needs: init
+    permissions:
+      contents: read
+      actions: write
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
+    secrets: inherit
+
+  image:
+    needs: init
+    permissions:
+      contents: read
+      packages: write
     uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
     secrets: inherit
     with:
       image-tag: ${{ needs.init.outputs.image-push-tag }}
       image-repository: ${{ needs.init.outputs.image-push-repository }}
+      # Runs ci_image_test.sh inside the candidate before anything scans it.
       test: true
       test-script: ci_image_test.sh
 
-  trivy-cache:
-    name: Warm Trivy Cache
-    needs: init
-    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
-    secrets: inherit
-    with:
-      enable-java-db: "true"
-
-  scan:
-    name: Scan Candidate Image
+  # Scans the digest the registry already holds -- no image tar is passed between jobs.
+  image-scan:
     needs: [image, trivy-cache]
+    permissions:
+      contents: read
+      checks: write
     uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@dev
     secrets: inherit
     with:
       scan-type: image
       image-ref: ${{ needs.image.outputs.image-ref-digest }}
 
+  # Guards depend on init alone: they ask whether the tag, changelog entry and
+  # image version are still free, which no build can change.
   check:
-    name: Release Guards
     needs: init
     uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
     secrets: inherit
@@ -96,5 +88,5 @@ jobs:
       tag: ${{ needs.init.outputs.tag }}
       image-tag: ${{ needs.init.outputs.image-tag }}
       image-repository: ${{ needs.init.outputs.image-repository }}
+      # The toolkit image ships no consumer migration contract.
       check-migration: false
-

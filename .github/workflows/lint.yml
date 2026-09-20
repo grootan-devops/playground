@@ -1,5 +1,4 @@
-name: Lint · Repository
-run-name: "Lint · ${{ github.ref_name }} · #${{ github.run_number }}"
+name: Lint · Dockerfile, YAML & Docs
 
 on:
   workflow_dispatch:
