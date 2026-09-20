@@ -3,10 +3,16 @@ name: Lint · Dockerfile, YAML & Docs
 on:
   workflow_dispatch:
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   lint:
+    permissions:
+      contents: read
     uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@dev
     secrets: inherit

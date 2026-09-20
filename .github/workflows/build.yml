@@ -1,7 +1,11 @@
-name: Build · Candidate Image
+name: Build · Image & Smoke Test
 
 on:
   workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -17,8 +21,6 @@ jobs:
     with:
       ignore-chart: "true"
 
-  # Builds, smoke-tests and pushes a candidate. No scan and no promotion:
-  # a dispatch always routes to the dev repository with a run-scoped suffix.
   image:
     needs: init
     permissions:
@@ -30,4 +32,3 @@ jobs:
       image-tag: ${{ needs.init.outputs.image-push-tag }}
       image-repository: ${{ needs.init.outputs.image-push-repository }}
       test: true
-      test-script: ci_image_test.sh

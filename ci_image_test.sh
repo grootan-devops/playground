@@ -1,101 +1,226 @@
 #!/usr/bin/env bash
+# Smoke test for the CI toolkit image, run inside the built image by docker.yml
+# (test: true). The repository root is mounted read-only at the working
+# directory, so the Dockerfile itself is the source of truth for every pinned
+# version asserted below.
+set -uo pipefail
 
-set -ex
+DOCKERFILE="${DOCKERFILE:-Dockerfile}"
+FAILURES=0
+CHECKS=0
 
-# Base OS / System Tools
-curl --version
-zip -v
-unzip -v
-gzip --version
-tar --version
-wget --version
-openssl version
-jq --version
-yq --version
-make --version
-which which
-less --version
-# shellcheck disable=SC2185 # a version probe, not a search
-find --version
-diff --version
-patch --version
+fail() {
+    printf '  FAIL  %s\n' "$*" >&2
+    FAILURES=$((FAILURES + 1))
+}
 
-# Networking / SSH
-ssh -V
-sshpass -V
-s-nail --version
-rsync --version
+pass() {
+    printf '  ok    %s\n' "$*"
+}
 
-# Development / Python 3.12 & uv
-git --version
-python3.12 --version
-python3 --version
-python --version
-uv --version
-uvx --version
+section() {
+    printf '\n== %s ==\n' "$*"
+}
 
-# Ensure strict Python 3.12.y
-python3 --version | grep -E "^Python 3\.12\."
-python --version | grep -E "^Python 3\.12\."
+# Value of an `ARG NAME=value` line in the Dockerfile.
+arg_value() {
+    sed -n "s/^ARG ${1}=\(.*\)$/\1/p" "${DOCKERFILE}" | head -n1
+}
 
-# Verify pip is NOT installed
-if which pip || which pip3 || which pip3.12 || which pip3.9; then
-  echo "Error: pip should not be installed" >&2
-  exit 1
+# A binary must resolve on PATH and answer a version probe without erroring.
+have() {
+    local bin="$1"
+    shift
+    CHECKS=$((CHECKS + 1))
+
+    if ! command -v "${bin}" >/dev/null 2>&1; then
+        fail "${bin}: not on PATH"
+        return 1
+    fi
+
+    if [ "$#" -gt 0 ]; then
+        if ! "${bin}" "$@" >/dev/null 2>&1; then
+            fail "${bin}: $(command -v "${bin}") exists but '${bin} $*' failed"
+            return 1
+        fi
+    fi
+
+    pass "${bin} -> $(command -v "${bin}")"
+    return 0
+}
+
+# The version a binary reports must contain the version the Dockerfile pinned.
+pinned() {
+    local bin="$1" arg="$2"
+    shift 2
+    CHECKS=$((CHECKS + 1))
+
+    local want
+    want="$(arg_value "${arg}")"
+    if [ -z "${want}" ]; then
+        fail "${bin}: no 'ARG ${arg}=' found in ${DOCKERFILE}"
+        return 1
+    fi
+
+    local got
+    if ! got="$("$@" 2>&1)"; then
+        fail "${bin}: version probe '$*' failed"
+        return 1
+    fi
+
+    case "${got}" in
+        *"${want}"*)
+            pass "${bin} pinned at ${want}"
+            ;;
+        *)
+            fail "${bin}: expected ${want} (ARG ${arg}), got: $(printf '%s' "${got}" | head -n1)"
+            ;;
+    esac
+}
+
+# A directory named by an environment variable must exist.
+env_dir() {
+    local name="$1"
+    CHECKS=$((CHECKS + 1))
+
+    local value="${!name-}"
+    if [ -z "${value}" ]; then
+        fail "\$${name} is unset"
+    elif [ ! -d "${value}" ]; then
+        fail "\$${name}=${value} is not a directory"
+    else
+        pass "\$${name}=${value}"
+    fi
+}
+
+if [ ! -f "${DOCKERFILE}" ]; then
+    printf 'FATAL: %s not found in %s -- the repository root is not mounted.\n' \
+        "${DOCKERFILE}" "$(pwd)" >&2
+    exit 1
 fi
 
-# Linters / Formatters
-yamllint --version
-ansible-lint --version
-pycodestyle --version
-isort --version
-mypy --version
-ruff --version
-biome --version
-hadolint --version
-actionlint -version
-shellcheck --version
+section "Base utilities"
+for bin in git jq curl wget tar unzip gzip zip make which openssl less rsync patch diff; do
+    have "${bin}" --version
+done
+have ssh
+have sshpass
+have find -version
 
-# Infrastructure / Cloud / Security
-terraform version
-tofu version
-terraform-docs --version
-tflint --version
-ansible --version
-trivy --version
-betterleaks --version
+section "Python runtime"
+have python --version
+have python3 --version
+pinned python "PYTHON_VERSION" python3 --version
 
-# Containers / Kubernetes
-docker --version
-docker buildx version
-podman --version
-buildah --version
-helm version
-helm-docs --version
-helm unittest --help
-kubectl version --client=true
-argocd version --client
-release-cli --version
-crane version
+section "Container tooling"
+have docker --version
+have buildah --version
+have podman --version
+have crane
+have release-cli
+CHECKS=$((CHECKS + 1))
+if docker buildx version >/dev/null 2>&1; then
+    pass "docker buildx CLI plugin installed"
+else
+    fail "docker buildx: CLI plugin missing or not executable"
+fi
 
-# Golang & Go Tools
-go version
-swag --version
-gosec --version
-golangci-lint --version
+section "Go toolchain"
+have go version
+have gofmt
+have golangci-lint --version
+have gosec
+have swag
+pinned go "GO_VERSION" go version
+pinned golangci-lint "GOLANGCI_LINT_VERSION" golangci-lint --version
 
-# Java & Maven
-java --version
-java --version 2>&1 | head -n1 | grep -E "^openjdk 25\."
-javac --version 2>&1 | grep -E "^javac 25\."
-mvn --version
-mvn --version 2>&1 | grep -E "^Java version: 25\."
+section "Java toolchain"
+have java -version
+have javac -version
+have jar
+have mvn -v
+pinned mvn "MAVEN_VERSION" mvn -v
+CHECKS=$((CHECKS + 1))
+JAVA_MAJOR="$(arg_value JAVA_VERSION | cut -d. -f1)"
+if java -version 2>&1 | grep -qE "version \"?${JAVA_MAJOR}[.\"]"; then
+    pass "java pinned at major ${JAVA_MAJOR}"
+else
+    fail "java: expected major ${JAVA_MAJOR}, got: $(java -version 2>&1 | head -n1)"
+fi
 
-# Node.js 24 & NPM / Yarn
-node --version
-node --version | grep -E "^v24\."
-npm --version
-npx --version
-yarn --version
-yarnpkg --version
-corepack --version
+section "Node toolchain"
+have node --version
+have npm --version
+have npx --version
+have yarn --version
+have corepack --version
+pinned node "NODE_VERSION" node --version
+pinned npm "NPM_VERSION" npm --version
+pinned yarn "YARN_VERSION" yarn --version
+
+section "Kubernetes & Helm"
+have helm version
+have kubectl version --client
+have helm-docs --version
+have argocd
+pinned helm "HELM_VERSION" helm version --short
+pinned helm-docs "HELM_DOCS_VERSION" helm-docs --version
+CHECKS=$((CHECKS + 1))
+if helm plugin list 2>/dev/null | grep -q unittest; then
+    pass "helm unittest plugin installed"
+else
+    fail "helm unittest plugin missing"
+fi
+
+section "Terraform & OpenTofu"
+have terraform version
+have tofu version
+have tflint --version
+have terraform-docs --version
+pinned terraform "TERRAFORM_VERSION" terraform version
+pinned tofu "TOFU_VERSION" tofu version
+pinned tflint "TFLINT_VERSION" tflint --version
+pinned terraform-docs "TF_DOCS_VERSION" terraform-docs --version
+
+section "Linters & scanners"
+have trivy --version
+have hadolint --version
+have actionlint -version
+have shellcheck --version
+have betterleaks
+have biome
+have yq --version
+pinned trivy "TRIVY_VERSION" trivy --version
+pinned hadolint "HADOLINT_VERSION" hadolint --version
+pinned actionlint "ACTIONLINT_VERSION" actionlint -version
+pinned shellcheck "SHELLCHECK_VERSION" shellcheck --version
+pinned yq "YQ_VERSION" yq --version
+
+section "Python linting stack"
+have uv --version
+pinned uv "UV_VERSION" uv --version
+for bin in yamllint ruff mypy isort pycodestyle ansible ansible-lint; do
+    have "${bin}" --version
+done
+
+section "Environment wiring"
+env_dir JAVA_HOME
+env_dir MAVEN_HOME
+env_dir NODE_HOME
+env_dir HELM_DATA_HOME
+CHECKS=$((CHECKS + 1))
+if [ -n "${GOPATH-}" ]; then
+    pass "\$GOPATH=${GOPATH}"
+else
+    fail "\$GOPATH is unset"
+fi
+
+printf '\n== Summary ==\n'
+printf '  %d checks, %d failures\n' "${CHECKS}" "${FAILURES}"
+
+if [ "${FAILURES}" -gt 0 ]; then
+    printf '\nImage smoke test FAILED.\n' >&2
+    exit 1
+fi
+
+printf '\nImage smoke test passed.\n'

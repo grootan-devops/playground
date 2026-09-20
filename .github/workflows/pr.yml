@@ -1,18 +1,15 @@
 name: CI · PR Verification
-run-name: "${{ github.event_name == 'pull_request' && format('PR #{0}', github.event.number) || 'Manual Verification' }} · ${{ github.actor }}"
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main]
     paths:
       - "Dockerfile"
       - ".dockerignore"
+      - "ci_image_test.sh"
       - "VERSION"
       - "CHANGELOG.md"
-      - "ci_image_test.sh"
-      # Without this a change to the pipeline itself is never verified.
       - ".github/**"
-  workflow_dispatch:
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
@@ -22,8 +19,6 @@ permissions:
   contents: read
 
 jobs:
-  # Resolves the version from VERSION, plus every tag and repository the run uses.
-  # Nothing downstream recomputes them.
   init:
     permissions:
       contents: read
@@ -34,16 +29,18 @@ jobs:
     with:
       ignore-chart: "true"
 
-  # Hadolint lives here. docker.yml builds; it does not lint.
   lint:
+    permissions:
+      contents: read
     uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@dev
     secrets: inherit
 
   secret-scan:
+    permissions:
+      contents: read
     uses: grootan-devops/github-ci-library/.github/workflows/secret-scanning.yml@dev
     secrets: inherit
 
-  # Pulls the Trivy databases once so every scan restores them.
   trivy-cache:
     needs: init
     permissions:
@@ -62,11 +59,8 @@ jobs:
     with:
       image-tag: ${{ needs.init.outputs.image-push-tag }}
       image-repository: ${{ needs.init.outputs.image-push-repository }}
-      # Runs ci_image_test.sh inside the candidate before anything scans it.
       test: true
-      test-script: ci_image_test.sh
 
-  # Scans the digest the registry already holds -- no image tar is passed between jobs.
   image-scan:
     needs: [image, trivy-cache]
     permissions:
@@ -78,15 +72,14 @@ jobs:
       scan-type: image
       image-ref: ${{ needs.image.outputs.image-ref-digest }}
 
-  # Guards depend on init alone: they ask whether the tag, changelog entry and
-  # image version are still free, which no build can change.
   check:
     needs: init
+    permissions:
+      contents: read
     uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
     secrets: inherit
     with:
       tag: ${{ needs.init.outputs.tag }}
       image-tag: ${{ needs.init.outputs.image-tag }}
       image-repository: ${{ needs.init.outputs.image-repository }}
-      # The toolkit image ships no consumer migration contract.
       check-migration: false

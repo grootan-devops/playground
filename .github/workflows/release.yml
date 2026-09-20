@@ -1,10 +1,8 @@
 name: CD · Production Release
-run-name: "Release · ${{ github.sha }}"
 
 on:
   push:
     branches: [main]
-    # A workflow-only commit must not cut a release.
     paths-ignore:
       - ".github/**"
   workflow_dispatch:
@@ -17,8 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  # workflow_dispatch can target any ref, so a release cut from a feature
-  # branch would publish an image that never passed a pull request.
   guard-ref:
     name: Verify Ref
     if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -37,7 +33,6 @@ jobs:
 
   init:
     needs: guard-ref
-    # guard-ref is skipped on a push, which would skip this job too: accept skipped, refuse failure.
     if: ${{ !cancelled() && needs.guard-ref.result != 'failure' }}
     permissions:
       contents: read
@@ -56,10 +51,6 @@ jobs:
     uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@dev
     secrets: inherit
 
-  # The candidate is re-scanned here, not trusted from the pull request run: it
-  # may have sat in the dev repository for days. `image-repository` is the
-  # PRODUCTION one -- scan.yml appends the dev suffix itself for a target that is
-  # not a bare x.y.z, so `image-dev-repository` would double it.
   scan:
     needs: [init, trivy-cache]
     permissions:
@@ -74,6 +65,8 @@ jobs:
 
   check:
     needs: init
+    permissions:
+      contents: read
     uses: grootan-devops/github-ci-library/.github/workflows/check.yml@dev
     secrets: inherit
     with:
@@ -82,8 +75,6 @@ jobs:
       image-repository: ${{ needs.init.outputs.image-repository }}
       check-migration: false
 
-  # Promotes the scanned candidate by digest. Nothing is rebuilt, so the
-  # released bytes are provably the scanned bytes.
   image:
     needs: [init, scan, check]
     permissions:
@@ -98,8 +89,6 @@ jobs:
       candidate-tag: ${{ needs.init.outputs.candidate-image-tag }}
       image-repository: ${{ needs.init.outputs.image-repository }}
       image-dev-repository: ${{ needs.init.outputs.image-dev-repository }}
-      # Required. docker.yml cannot depend on a scan that lives here, so it
-      # refuses to promote unless the verdict is handed to it.
       scan-result: ${{ needs.scan.result }}
 
   release:
