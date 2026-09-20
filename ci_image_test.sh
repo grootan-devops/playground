@@ -100,12 +100,14 @@ if [ ! -f "${DOCKERFILE}" ]; then
 fi
 
 section "Base utilities"
-for bin in git jq curl wget tar unzip gzip zip make which openssl less rsync patch diff; do
+for bin in git jq curl wget tar gzip zip make which openssl less rsync patch diff; do
     have "${bin}" --version
 done
 have ssh
 have sshpass
 have find -version
+# Info-ZIP unzip predates long options; -v is its version probe.
+have unzip -v
 
 section "Python runtime"
 have python --version
