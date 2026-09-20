@@ -47,7 +47,9 @@ Copyright 2026 Grootan Technologies Pvt Ltd.
 
 Releases are cut by a push to `main` that touches something outside `.github/**`;
 the pipeline promotes the image the pull request already built rather than
-rebuilding it. See `.github/workflows/release.yml`.
+rebuilding it. A workflow-only change therefore never releases. Bump `VERSION`
+and add a `CHANGELOG.md` entry in the same pull request — the release guards
+refuse a version that is already tagged. See `.github/workflows/release.yml`.
 
 Licensed under the [GNU Affero General Public License v3.0](./LICENSE.md)
 (`AGPL-3.0-only`). External contributions are not accepted; see

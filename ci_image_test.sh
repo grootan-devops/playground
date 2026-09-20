@@ -155,6 +155,7 @@ have node --version
 have npm --version
 have npx --version
 have yarn --version
+have yarnpkg --version
 have corepack --version
 pinned node "NODE_VERSION" node --version
 pinned npm "NPM_VERSION" npm --version

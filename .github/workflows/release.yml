@@ -27,7 +27,6 @@ jobs:
 
   image:
     needs: init
-    if: ${{ !cancelled() && needs.init.result == 'success' }}
     permissions:
       contents: read
       packages: write
@@ -46,8 +45,6 @@ jobs:
 
   release:
     needs: [init, image]
-    if: ${{ !cancelled() && needs.init.result == 'success'
-      && needs.image.result == 'success' }}
     permissions:
       contents: write
       actions: read
