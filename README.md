@@ -48,6 +48,3 @@ Copyright 2026 Grootan Technologies Pvt Ltd.
 Licensed under the [GNU Affero General Public License v3.0](./LICENSE.md)
 (`AGPL-3.0-only`). External contributions are not accepted; see
 [CONTRIBUTING.md](./CONTRIBUTING.md) for bug and security reporting.
-
-<!-- release pipeline shape verification -->
-<!-- release shape check 2 -->
