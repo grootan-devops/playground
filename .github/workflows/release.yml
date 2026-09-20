@@ -1,0 +1,74 @@
+name: CD · Release
+run-name: "CD · ${{ inputs.service || 'changed' }} · ${{ github.ref_name }}"
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - ".github/**"
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Which service to release
+        required: true
+        default: all
+        type: choice
+        options: [all, api, backend]
+
+concurrency:
+  group: "release-${{ github.ref }}"
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  actions: write
+  pull-requests: read
+  checks: write
+
+jobs:
+  guard-ref:
+    name: Verify Ref
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-26.04' }}
+    timeout-minutes: 5
+    steps:
+      - name: Refuse A Release From A Non-Default Ref
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_NAME}" != "${DEFAULT_BRANCH}" ]]; then
+            echo "::error title=Release refused::A release may only be cut from '${DEFAULT_BRANCH}', not '${GITHUB_REF_NAME}'."
+            exit 1
+          fi
+
+  # The merge commit's own diff decides which services this merge changed, so a
+  # release promotes only what the pull request actually rebuilt.
+  discover:
+    name: Discover
+    needs: [guard-ref]
+    if: ${{ !cancelled() && needs.guard-ref.result != 'failure' }}
+    uses: grootan-devops/github-ci-library/.github/workflows/mono.yml@mono-repo-dev
+    secrets: inherit
+    with:
+      only: ${{ inputs.service }}
+      projects: >-
+        [
+          {"name":"api","path":"api","image":"grootantech/toolkit-api"},
+          {"name":"backend","path":"backend","image":"grootantech/toolkit-backend"}
+        ]
+
+  service:
+    name: "${{ matrix.name }}"
+    needs: discover
+    if: ${{ needs.discover.outputs.any-changed == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    uses: ./.github/workflows/service-release.yml
+    secrets: inherit
+    with:
+      name: ${{ matrix.name }}
+      path: ${{ matrix.path }}
+      image: ${{ matrix.image }}
