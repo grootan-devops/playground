@@ -6,6 +6,13 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-09-21
+
+### Added
+
+- Smoke test asserts `NODE_PATH`, which the image sets beside `NODE_HOME` but the
+  test never checked.
+
 ## [1.0.1] - 2026-09-21
 
 ### Added
