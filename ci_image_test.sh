@@ -206,6 +206,7 @@ for bin in yamllint ruff mypy isort pycodestyle ansible ansible-lint; do
     have "${bin}" --version
 done
 
+# Kubernetes tooling reads HOME for its config; a container with none breaks helm.
 section "Environment wiring"
 env_dir JAVA_HOME
 env_dir MAVEN_HOME
