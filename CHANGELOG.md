@@ -6,6 +6,14 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-09-21
+
+### Changed
+
+- `RELEASE_CHANGELOG.md` is no longer attached as a GitHub Release asset. It is the
+  release body, so attaching it duplicated the same text as a download. It remains
+  in the workflow payload artifact, which the Teams notification reads.
+
 ## [1.0.4] - 2026-09-21
 
 ### Fixed
