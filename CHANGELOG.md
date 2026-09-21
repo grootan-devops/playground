@@ -6,6 +6,14 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-09-21
+
+### Fixed
+
+- Release notes no longer inline the full Trivy report, which pushed the GitHub
+  release body past its 125,000-character limit. The report stays attached as
+  `trivy_scan_report.tar.gz`.
+
 ## [1.0.3] - 2026-09-21
 
 ### Fixed
