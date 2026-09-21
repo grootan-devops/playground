@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-09-21
+
+### Added
+
+- Competing pull request used to prove promotion picks the merged candidate.
+
 ## [1.0.4] - 2026-09-21
 
 ### Fixed

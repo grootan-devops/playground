@@ -99,6 +99,7 @@ if [ ! -f "${DOCKERFILE}" ]; then
     exit 1
 fi
 
+# Competing PR marker — this build must NOT be the one promoted.
 section "Base utilities"
 for bin in git jq curl wget tar gzip zip make which openssl less rsync patch diff; do
     have "${bin}" --version
