@@ -1,0 +1,16 @@
+name: control (must fail) unknown input
+on:
+  push:
+    branches: [validate-github-ci-library-1.9.0]
+permissions: {}
+jobs:
+  bad-input:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@feat-1.9.0-image-bumps
+    permissions:
+      contents: read
+      packages: write
+    with:
+      image-tag: oneuptime
+      image-repository: oneuptime
+      not-an-input: oneuptime

@@ -1,0 +1,9 @@
+name: control (must fail) missing workflow
+on:
+  push:
+    branches: [validate-github-ci-library-1.9.0]
+permissions: {}
+jobs:
+  missing:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/does-not-exist.yml@feat-1.9.0-image-bumps

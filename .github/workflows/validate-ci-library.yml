@@ -1,0 +1,155 @@
+name: validate github-ci-library feat-1.9.0-image-bumps
+on:
+  push:
+    branches: [validate-github-ci-library-1.9.0]
+permissions: {}
+jobs:
+  v-buildah:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/buildah.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read","packages":"write"}
+    with:
+      image-tag: oneuptime
+      image-repository: oneuptime
+  v-chart:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/chart.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read","packages":"write"}
+    with:
+      chart-name: oneuptime
+      chart-version: oneuptime
+      chart-app-version: oneuptime
+      chart-repository: oneuptime
+  v-check:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+    with:
+      tag: oneuptime
+  v-deploy-argocd-gitops:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/deploy-argocd-gitops.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+    with:
+      environment: oneuptime
+      gitops-repo: oneuptime
+      gitops-branch: oneuptime
+      argocd-app-name: oneuptime
+      argocd-server: oneuptime
+  v-deploy-komodo-gitops:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/deploy-komodo-gitops.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+    with:
+      environment: oneuptime
+      gitops-repo: oneuptime
+      gitops-branch: oneuptime
+      gitops-service-image-yq-path: oneuptime
+      komodo-server: oneuptime
+      komodo-stack-name: oneuptime
+      image-tag: oneuptime
+      image-repository: oneuptime
+  v-docker:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read","packages":"write"}
+    with:
+      image-tag: oneuptime
+      image-repository: oneuptime
+  v-golang-build:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/golang-build.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"checks":"write","contents":"read"}
+  v-golang-lint:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/golang-lint.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+  v-init:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"actions":"read","contents":"read","pull-requests":"read"}
+  v-java-build:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/java-build.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"checks":"write","contents":"read"}
+  v-lint:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+  v-node-build:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/node-build.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"checks":"write","contents":"read"}
+  v-node-lint:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/node-lint.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+  v-notify:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/notify.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+    with:
+      tag: oneuptime
+  v-python-build:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/python-build.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"checks":"write","contents":"read"}
+  v-python-lint:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/python-lint.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+  v-release:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/release.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"actions":"read","contents":"write"}
+    with:
+      tag: oneuptime
+  v-sbom:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/sbom.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+  v-scan:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"checks":"write","contents":"read"}
+    with:
+      scan-type: oneuptime
+  v-secret-scanning:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/secret-scanning.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+  v-sonarqube:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/sonarqube.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+  v-terraform:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/terraform.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
+  v-trivy-cache:
+    if: ${{ false }}
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@feat-1.9.0-image-bumps
+    secrets: inherit
+    permissions: {"contents":"read"}
