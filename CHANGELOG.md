@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-11-18
+
+### Changed
+
+- Scenario 7: merged with a true merge commit (MERGE queue); the release commit has two parents.
+
 ## [1.2.2] - 2026-11-18
 
 ### Changed
