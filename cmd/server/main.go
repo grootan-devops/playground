@@ -17,7 +17,7 @@ var (
 	Version = "dev"
 	// Marker names the pull request that built the image, so a promoted image
 	// can be traced back to its candidate.
-	Marker = "E"
+	Marker = "S4"
 )
 
 func healthHandler(w http.ResponseWriter, _ *http.Request) {
@@ -31,7 +31,7 @@ func rootHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func versionLine() string {
-	return fmt.Sprintf("playground %s marker %s", Version, Marker)
+	return fmt.Sprintf("pg %s marker %s", Version, Marker)
 }
 
 func main() {
