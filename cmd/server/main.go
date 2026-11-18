@@ -31,7 +31,7 @@ func rootHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func versionLine() string {
-	return fmt.Sprintf("playground %s marker %s", Version, Marker)
+	return fmt.Sprintf("pg %s marker %s", Version, Marker)
 }
 
 func main() {
