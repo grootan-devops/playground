@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-11-18
+
+### Changed
+
+- Scenario 5: hotfix on the 1.1 line after 1.2.1; only the 1.1 alias may move.
+
 ## [1.2.1] - 2026-11-18
 
 ### Changed
