@@ -1,0 +1,11 @@
+apiVersion: v2
+name: playground-chart
+description: Playground Go HTTP server, for testing github-ci-library chart releases
+type: application
+version: 1.3.0
+appVersion: 1.3.0
+dependencies:
+  - name: tpl-library
+    version: 1.6.0
+    repository: oci://registry-1.docker.io/grootantech
+deprecated: false

@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-18
+
+### Changed
+
+- Scenario 8: a Helm chart (`playground-chart`, on the shared `tpl-library`) published to Docker Hub as an OCI artifact: the pull request pushes a candidate chart, the release promotes that exact candidate.
+
 ## [1.2.3] - 2026-11-18
 
 ### Changed
