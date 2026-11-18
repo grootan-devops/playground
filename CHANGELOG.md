@@ -11,6 +11,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Scenario 4: the pull request's latest commit fails verification, so the merge must not be released.
+- Scenario 5: the version line is restored and 1.2.1 is released, advancing `latest`, `1` and `1.2`.
 
 ## [1.2.0] - 2026-11-18
 
