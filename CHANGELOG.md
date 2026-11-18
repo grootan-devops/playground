@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-18
+
+### Changed
+
+- Scenario 2: two commits squashed by the merge queue into one release commit.
+
 ## [1.1.0] - 2026-11-18
 
 ### Added
