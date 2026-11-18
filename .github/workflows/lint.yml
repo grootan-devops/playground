@@ -15,5 +15,5 @@ jobs:
   lint:
     permissions:
       contents: read
-    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@1.9.2
     secrets: inherit

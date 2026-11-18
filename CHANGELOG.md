@@ -11,14 +11,17 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - End-to-end verification of candidate build, scan, and digest promotion.
+- A small Go HTTP server (`cmd/server`) as the test application, built in the
+  `grootantech/toolkit` builder stage and run on `grootantech/micro-root`. Its version and
+  marker identify which candidate a release promoted.
 - Two Terraform roots, `infra/network` and `infra/storage`, scanned as a matrix so the
   release carries one Terraform scan summary per root.
 
 ### Changed
 
-- CI calls the github-ci-library `fix-1.9.2-fail-closed-promotion` branch instead of the
-  deleted `dev` branch, and publishes the image to `grootantech/playground` instead of the
-  shared `grootantech/toolkit` repository.
+- The image is the test application instead of a copy of the toolkit image, and is
+  published to `grootantech/playground` instead of the shared `grootantech/toolkit`.
+- CI calls github-ci-library `1.9.2` instead of the deleted `dev` branch.
 
 ## [1.0.5] - 2026-09-21
 

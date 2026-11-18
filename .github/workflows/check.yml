@@ -22,7 +22,7 @@ jobs:
       contents: read
       actions: read
       pull-requests: read
-    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.2
     secrets: inherit
     with:
       tag: ${{ inputs.tag }}
@@ -32,12 +32,10 @@ jobs:
     needs: init
     permissions:
       contents: read
-    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@1.9.2
     secrets: inherit
     with:
       tag: ${{ needs.init.outputs.tag }}
       image-tag: ${{ needs.init.outputs.image-tag }}
       image-repository: ${{ needs.init.outputs.image-repository }}
       check-migration: false
-      # TESTING ONLY: the library is pinned to a branch until 1.9.2 is tagged.
-      allow-unstable-library-refs: true

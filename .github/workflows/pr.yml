@@ -10,6 +10,9 @@ on:
       - "ci_image_test.sh"
       - "VERSION"
       - "CHANGELOG.md"
+      - "go.mod"
+      - "cmd/**"
+      - "ignored-cves.yml"
       - "infra/**"
       - ".github/**"
 
@@ -26,7 +29,7 @@ jobs:
       contents: read
       actions: read
       pull-requests: read
-    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.2
     secrets: inherit
     with:
       ignore-chart: "true"
@@ -34,13 +37,13 @@ jobs:
   lint:
     permissions:
       contents: read
-    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@1.9.2
     secrets: inherit
 
   secret-scan:
     permissions:
       contents: read
-    uses: grootan-devops/github-ci-library/.github/workflows/secret-scanning.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/secret-scanning.yml@1.9.2
     secrets: inherit
 
   trivy-cache:
@@ -48,7 +51,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@1.9.2
     secrets: inherit
     with:
       enable-java-db: false
@@ -58,7 +61,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@1.9.2
     secrets: inherit
     with:
       image-tag: ${{ needs.init.outputs.image-push-tag }}
@@ -70,7 +73,7 @@ jobs:
     permissions:
       contents: read
       checks: write
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.2
     secrets: inherit
     with:
       scan-type: image
@@ -85,7 +88,7 @@ jobs:
     permissions:
       contents: read
       checks: write
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.2
     secrets: inherit
     with:
       scan-type: config
@@ -96,12 +99,10 @@ jobs:
     needs: init
     permissions:
       contents: read
-    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@fix-1.9.2-fail-closed-promotion
+    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@1.9.2
     secrets: inherit
     with:
       tag: ${{ needs.init.outputs.tag }}
       image-tag: ${{ needs.init.outputs.image-tag }}
       image-repository: ${{ needs.init.outputs.image-repository }}
       check-migration: false
-      # TESTING ONLY: the library is pinned to a branch until 1.9.2 is tagged.
-      allow-unstable-library-refs: true
