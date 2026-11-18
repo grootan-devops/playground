@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-11-18
+
+### Changed
+
+- Scenario 6: two commits rebased onto main by the merge queue (REBASE), no squash commit.
+
 ## [1.1.2] - 2026-11-18
 
 ### Changed
