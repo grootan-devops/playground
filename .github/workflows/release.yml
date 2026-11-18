@@ -20,7 +20,7 @@ jobs:
       contents: read
       actions: read
       pull-requests: read
-    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@dev
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@fix-1.9.2-fail-closed-promotion
     secrets: inherit
     with:
       ignore-chart: "true"
@@ -30,7 +30,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@dev
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@fix-1.9.2-fail-closed-promotion
     secrets: inherit
     with:
       is-release: true
@@ -48,7 +48,7 @@ jobs:
     permissions:
       contents: write
       actions: read
-    uses: grootan-devops/github-ci-library/.github/workflows/release.yml@dev
+    uses: grootan-devops/github-ci-library/.github/workflows/release.yml@fix-1.9.2-fail-closed-promotion
     secrets: inherit
     with:
       tag: ${{ needs.init.outputs.tag }}

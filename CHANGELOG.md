@@ -6,6 +6,20 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-18
+
+### Added
+
+- End-to-end verification of candidate build, scan, and digest promotion.
+- Two Terraform roots, `infra/network` and `infra/storage`, scanned as a matrix so the
+  release carries one Terraform scan summary per root.
+
+### Changed
+
+- CI calls the github-ci-library `fix-1.9.2-fail-closed-promotion` branch instead of the
+  deleted `dev` branch, and publishes the image to `grootantech/playground` instead of the
+  shared `grootantech/toolkit` repository.
+
 ## [1.0.5] - 2026-09-21
 
 ### Changed
