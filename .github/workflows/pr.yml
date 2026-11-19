@@ -90,6 +90,8 @@ jobs:
       chart-version: ${{ needs.init.outputs.chart-push-version }}
       chart-app-version: ${{ needs.init.outputs.chart-app-version }}
       chart-repository: ${{ needs.init.outputs.chart-push-repository }}
+      # Scenario 11: no candidate chart; the release preflight must stop the release.
+      publish-candidate: false
 
   chart-scan:
     needs: [chart, trivy-cache]
