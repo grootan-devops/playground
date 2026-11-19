@@ -30,19 +30,19 @@ jobs:
       contents: read
       actions: read
       pull-requests: read
-    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.3
     secrets: inherit
 
   lint:
     permissions:
       contents: read
-    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/lint.yml@1.9.3
     secrets: inherit
 
   secret-scan:
     permissions:
       contents: read
-    uses: grootan-devops/github-ci-library/.github/workflows/secret-scanning.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/secret-scanning.yml@1.9.3
     secrets: inherit
 
   trivy-cache:
@@ -50,7 +50,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@1.9.3
     secrets: inherit
     with:
       enable-java-db: false
@@ -60,7 +60,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@1.9.3
     secrets: inherit
     with:
       image-tag: ${{ needs.init.outputs.image-push-tag }}
@@ -72,7 +72,7 @@ jobs:
     permissions:
       contents: read
       checks: write
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.3
     secrets: inherit
     with:
       scan-type: image
@@ -83,22 +83,20 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: grootan-devops/github-ci-library/.github/workflows/chart.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/chart.yml@1.9.3
     secrets: inherit
     with:
       chart-name: ${{ needs.init.outputs.chart-name }}
       chart-version: ${{ needs.init.outputs.chart-push-version }}
       chart-app-version: ${{ needs.init.outputs.chart-app-version }}
       chart-repository: ${{ needs.init.outputs.chart-push-repository }}
-      # Scenario 9: no candidate chart, so the release has nothing it may promote.
-      publish-candidate: false
 
   chart-scan:
     needs: [chart, trivy-cache]
     permissions:
       contents: read
       checks: write
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.3
     secrets: inherit
     with:
       scan-type: config
@@ -113,7 +111,7 @@ jobs:
     permissions:
       contents: read
       checks: write
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.3
     secrets: inherit
     with:
       scan-type: config
@@ -124,7 +122,7 @@ jobs:
     needs: init
     permissions:
       contents: read
-    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/check.yml@1.9.3
     secrets: inherit
     with:
       tag: ${{ needs.init.outputs.tag }}

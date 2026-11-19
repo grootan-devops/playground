@@ -20,7 +20,7 @@ jobs:
       contents: read
       actions: read
       pull-requests: read
-    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.3
     secrets: inherit
 
   image:
@@ -28,7 +28,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/docker.yml@1.9.3
     secrets: inherit
     with:
       is-release: true
@@ -46,7 +46,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: grootan-devops/github-ci-library/.github/workflows/chart.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/chart.yml@1.9.3
     secrets: inherit
     with:
       is-release: true
@@ -63,7 +63,7 @@ jobs:
     permissions:
       contents: write
       actions: read
-    uses: grootan-devops/github-ci-library/.github/workflows/release.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/release.yml@1.9.3
     secrets: inherit
     with:
       tag: ${{ needs.init.outputs.tag }}
