@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-18
+
+### Changed
+
+- Scenario 9: the pull request publishes no chart candidate, so the release must refuse the chart instead of packaging the working tree.
+
 ## [1.3.0] - 2026-11-18
 
 ### Changed
