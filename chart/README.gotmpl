@@ -1,0 +1,31 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.description" . }}
+
+## Overview & Purpose
+
+Playground Go HTTP server, used to test github-ci-library chart candidates and releases.
+
+## Architecture & Template Library
+
+This chart uses the shared template library `tpl-library`.
+
+{{ template "chart.requirementsHeader" . }}
+
+{{ template "chart.kubeVersionLine" . }}
+
+{{ template "chart.requirementsTable" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

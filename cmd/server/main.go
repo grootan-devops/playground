@@ -17,7 +17,7 @@ var (
 	Version = "dev"
 	// Marker names the pull request that built the image, so a promoted image
 	// can be traced back to its candidate.
-	Marker = "MERGE"
+	Marker = "CHART"
 )
 
 func healthHandler(w http.ResponseWriter, _ *http.Request) {

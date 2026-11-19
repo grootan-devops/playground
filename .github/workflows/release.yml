@@ -22,8 +22,6 @@ jobs:
       pull-requests: read
     uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.2
     secrets: inherit
-    with:
-      ignore-chart: "true"
 
   image:
     needs: init
@@ -43,8 +41,25 @@ jobs:
       image-repository: ${{ needs.init.outputs.image-repository }}
       image-dev-repository: ${{ needs.init.outputs.image-dev-repository }}
 
-  release:
+  chart:
     needs: [init, image]
+    permissions:
+      contents: read
+      packages: write
+    uses: grootan-devops/github-ci-library/.github/workflows/chart.yml@1.9.2
+    secrets: inherit
+    with:
+      is-release: true
+      chart-name: ${{ needs.init.outputs.chart-name }}
+      chart-version: ${{ needs.init.outputs.chart-version }}
+      chart-app-version: ${{ needs.init.outputs.chart-app-version }}
+      chart-repository: ${{ needs.init.outputs.chart-repository }}
+      chart-dev-repository: ${{ needs.init.outputs.chart-dev-repository }}
+      release-tag: ${{ needs.init.outputs.tag }}
+      candidate-version: ${{ needs.init.outputs.candidate-chart-version }}
+
+  release:
+    needs: [init, image, chart]
     permissions:
       contents: write
       actions: read
