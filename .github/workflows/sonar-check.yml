@@ -1,0 +1,16 @@
+name: Check · Sonar Scanner Image
+run-name: "Sonar image · ${{ github.sha }}"
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  no-user-option:
+    permissions:
+      contents: read
+    uses: grootan-devops/github-ci-library/.github/workflows/sonarqube.yml@tmp/sonar-no-user
+    secrets: inherit
