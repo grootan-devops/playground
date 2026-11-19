@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-11-18
+
+### Changed
+
+- Scenario 12: hotfix on the 1.2 line after 1.3.2; only the 1.2 alias moves and GitHub's Latest badge stays on 1.3.2.
+
 ## [1.3.3] - 2026-11-18
 
 ### Changed
