@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-11-18
+
+### Changed
+
+- Scenario 10: github-ci-library 1.9.3; the release notes and the attached chart describe the released 1.3.2, and re-running the release changes nothing.
+
 ## [1.3.1] - 2026-11-18
 
 ### Changed

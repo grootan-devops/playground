@@ -22,7 +22,7 @@ jobs:
       contents: read
       actions: read
       pull-requests: read
-    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/init.yml@1.9.3
     secrets: inherit
     with:
       tag: ${{ inputs.tag }}
@@ -33,7 +33,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/trivy-cache.yml@1.9.3
     secrets: inherit
     with:
       enable-java-db: false
@@ -43,7 +43,7 @@ jobs:
     permissions:
       contents: read
       checks: write
-    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.2
+    uses: grootan-devops/github-ci-library/.github/workflows/scan.yml@1.9.3
     secrets: inherit
     with:
       scan-type: image
