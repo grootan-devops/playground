@@ -6,6 +6,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-11-18
+
+### Changed
+
+- Scenario 11: no chart candidate on 1.9.3, so the release preflight must stop it before anything is published.
+
 ## [1.3.2] - 2026-11-18
 
 ### Changed
